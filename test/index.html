@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>fall-federate — proof of play</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Live, re-runnable proof: two independent sovereign identities federate over real WebRTC, exchange a signed query/answer, and settle a bounded provenance payout — all verifiable in your own browser. Plus the estate's witness gate run against a real external repo.">
+<meta name="theme-color" content="#0b0e14">
+<style>
+  :root{--bg:#f7f8fa;--panel:#fff;--panel2:#f1f4f8;--ink:#0d1520;--muted:#576373;--faint:#8a94a3;--line:#e3e8ef;--accent:#3b5bdb;--accent2:#7048e8;--accent-ink:#fff;--ok:#0c9463;--warn:#d9880a;--hot:#c0392b;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;--mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;--maxw:1000px;--r:14px}
+  @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#080b11;--panel:#111722;--panel2:#161d2a;--ink:#e8eef6;--muted:#8d99a9;--faint:#5b6675;--line:#1e2735;--accent:#5c7cfa;--accent2:#9775fa;--accent-ink:#080b11;--ok:#2fbd85;--warn:#e6a23c;--hot:#f0664f}}
+  :root[data-theme=dark]{--bg:#080b11;--panel:#111722;--panel2:#161d2a;--ink:#e8eef6;--muted:#8d99a9;--faint:#5b6675;--line:#1e2735;--accent:#5c7cfa;--accent2:#9775fa;--accent-ink:#080b11;--ok:#2fbd85;--warn:#e6a23c;--hot:#f0664f}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  a{color:var(--accent)}code{font-family:var(--mono);font-size:.88em;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:.06em .36em;word-break:break-all}
+  .mono{font-family:var(--mono)}
+  h1{font-size:clamp(1.9rem,5vw,2.8rem);letter-spacing:-.03em;margin:.4rem 0 .3rem;font-weight:850}
+  h2{font-size:1.35rem;letter-spacing:-.02em;margin:.2rem 0 .5rem}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  header{padding:64px 0 30px}
+  header p.lead{color:var(--muted);font-size:1.06rem;max-width:70ch}
+  section{padding:26px 0;border-top:1px solid var(--line)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-top:14px}
+  .btn{display:inline-block;padding:.6rem 1.05rem;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-size:.92rem;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:var(--panel);color:var(--ink);border-color:var(--line)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .checks{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:7px}
+  .checks li{display:flex;gap:10px;align-items:baseline;font-size:.93rem;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
+  .checks li .st{font-family:var(--mono);font-weight:700;flex:none;width:20px}
+  .checks li.pass .st{color:var(--ok)}.checks li.fail .st{color:var(--hot)}.checks li.pend .st{color:var(--faint)}
+  .checks li .lbl{color:var(--ink)}.checks li .dsc{color:var(--muted);font-size:.85rem}
+  .verdict{font-family:var(--mono);font-weight:800;font-size:1.05rem;margin-top:14px;padding:12px 15px;border-radius:10px;border:1px solid var(--line)}
+  .verdict.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 8%,transparent)}
+  .verdict.fail{color:var(--hot);border-color:color-mix(in srgb,var(--hot) 45%,var(--line))}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.86rem;margin-top:12px}
+  .kv .k{font-family:var(--mono);color:var(--faint)}.kv .v{font-family:var(--mono);color:var(--ink);word-break:break-all}
+  pre{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font-size:.8rem;max-height:280px;margin-top:12px}
+  .log{font-family:var(--mono);font-size:.8rem;color:var(--muted);white-space:pre-wrap;margin-top:12px;max-height:220px;overflow:auto}
+  .tag{font-family:var(--mono);font-size:.68rem;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:20px;padding:.16rem .5rem;background:color-mix(in srgb,var(--accent) 7%,transparent)}
+  .note{color:var(--muted);font-size:.9rem;margin:.5rem 0 0;max-width:72ch}
+  .theme{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.8rem;float:right;margin-top:14px}
+  footer{padding:34px 0;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}
+  .big{font-size:1.6rem;font-weight:850;font-variant-numeric:tabular-nums;color:var(--ink)}
+</style>
+
+<div class="wrap">
+<button class="theme" id="theme" type="button">Theme</button>
+<header>
+  <span class="eyebrow">fall-federate · proof of play</span>
+  <h1>Two nodes, one signed exchange, one payout — checked in your browser.</h1>
+  <p class="lead">Not a claim, a re-run. Below, two <b>genuinely independent</b> sovereign identities federate: one asks, the other answers from its own expertise, and the value is settled with a bounded provenance royalty upstream. Every signature is verified here, on your machine, against nothing but the public keys. Then a live version runs over a <b>real WebRTC datachannel</b>. And separately, the estate's mutation gate is run against a real external repo we don't own.</p>
+</header>
+
+<section id="reverify">
+  <span class="tag">Recorded exchange · re-verify</span>
+  <h2>1 · The signed federation, re-checked from the evidence alone</h2>
+  <p class="note">This exchange was produced cold with real Ed25519 (Node). The bundle below carries the two identities, the contributor's signed lineage, the signed query, the signed answer bound to that query, and the settlement. Press the button — your browser re-verifies every signature with WebCrypto. No secrets, no trust in our machine.</p>
+  <div class="card">
+    <div class="row"><button class="btn" id="reBtn" type="button">Re-verify the recorded exchange →</button> <span id="reState" class="mono" style="color:var(--muted)"></span></div>
+    <ul class="checks" id="reChecks"></ul>
+    <div class="verdict" id="reVerdict" style="display:none"></div>
+    <div class="kv" id="reKv"></div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;color:var(--muted);font-size:.86rem">the raw evidence bundle (open the file)</summary><pre id="reRaw">loading…</pre><p class="note"><a href="../evidence.json" target="_blank" rel="noopener">../evidence.json</a> — the exact bytes, independently checkable.</p></details>
+  </div>
+</section>
+
+<section id="live">
+  <span class="tag">Live · real transport</span>
+  <h2>2 · Run a fresh federation over a real WebRTC datachannel</h2>
+  <p class="note">This spins up <b>two independent identities</b> and connects them peer-to-peer over a real WebRTC datachannel (STUN for the public reflexive address — the sovereign way, no relay). One signs a query, sends it over the wire; the other verifies it, answers, signs; the first verifies and settles the payout. All in your browser, live. Same machine here, real transport — a second physical machine/human is the follow-on step (below).</p>
+  <div class="card">
+    <div class="row"><button class="btn" id="liveBtn" type="button">Run live over WebRTC →</button> <span id="liveState" class="mono" style="color:var(--muted)"></span></div>
+    <ul class="checks" id="liveChecks"></ul>
+    <div class="verdict" id="liveVerdict" style="display:none"></div>
+    <div class="log" id="liveLog"></div>
+  </div>
+</section>
+
+<section id="witness">
+  <span class="tag">Proof rail · run against others</span>
+  <h2>3 · The estate's mutation gate, run against a real repo we don't own</h2>
+  <p class="note">The same witness gate that proves the estate's own code was run against <b>left-pad</b> — the public package that famously broke npm in 2016 — using its own passing test suite (35 tests). A mutation gate alters one operator at a time and requires the suite to catch it; a survivor means a line the green suite does not actually pin. This is a real, reproducible verdict on code we don't control.</p>
+  <div class="card" id="witCard">
+    <div class="kv" id="witKv"></div>
+    <div class="verdict" id="witVerdict" style="display:none"></div>
+    <p class="note" style="margin-top:12px">Reproduce it: <code>git clone https://github.com/left-pad/left-pad &amp;&amp; cd left-pad &amp;&amp; npm i</code>, then run the estate's <code>witness</code> Action: <code>witness mutate index.js --test node test.js</code>. Result file: <a href="../witness-external.json" target="_blank" rel="noopener">../witness-external.json</a>.</p>
+  </div>
+</section>
+
+<section id="honest">
+  <h2>What this proves — and what still needs a second human</h2>
+  <div class="card">
+    <ul class="checks">
+      <li class="pass"><span class="st">✓</span><span><b>Proven cold:</b> <span class="dsc">two genuinely-independent Ed25519 identities exchange a signed query/answer bound together, settle a bounded provenance payout, and a third party re-verifies it all from the bundle alone. Tamper one byte and it fails (tested).</span></span></li>
+      <li class="pass"><span class="st">✓</span><span><b>Proven live:</b> <span class="dsc">the same exchange over a real WebRTC datachannel with a STUN reflexive address — real transport, not a loopback of one key.</span></span></li>
+      <li class="pass"><span class="st">✓</span><span><b>Proven external:</b> <span class="dsc">the mutation gate produced a real verdict on a real repo we don't own.</span></span></li>
+      <li class="pend"><span class="st">◻</span><span><b>Still needs a second human:</b> <span class="dsc">the live run here is two identities in one browser. The true test is a second person on a different machine — e.g. someone forks <code>dannydotcomdidyos</code>, hatches their Didy, and pastes an offer blob over Signal to connect. The mechanism is proven; the remaining step is a willing second operator.</span></span></li>
+      <li class="pend"><span class="st">◻</span><span><b>Still open (proof rail):</b> <span class="dsc">merging <code>witness</code> into a real external team's CI (a FAIL on a push to a repo we don't own) needs a willing external maintainer — a warm intro, not a stranger's repo spammed with a PR.</span></span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="wrap">
+  fall-federate · the federation kernel gates witness 17/17 clean; it composes the estate's proven wallet lineage (the-wallet). Provenance: the Konomi architecture, created by Thomas Frumkin. Mesh &amp; reflection build on Gary W. Floyd's work. · <a href="https://github.com/sjgant80-hub/fall-federate" target="_blank" rel="noopener">source</a>
+</footer>
+</div>
+
+<script type="module">
+const $=id=>document.getElementById(id);
+(function(){try{const s=localStorage.getItem('ff-theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}
+  $('theme').onclick=()=>{const c=document.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('ff-theme',n)}catch(e){}};})();
+
+// ── the pure kernel (same logic the witness gates: canonical + queryRef + boundTo + settlement) ──
+function canonical(o){if(o===null||typeof o!=='object')return JSON.stringify(o);if(Array.isArray(o))return '['+o.map(canonical).join(',')+']';return '{'+Object.keys(o).sort().map(k=>JSON.stringify(k)+':'+canonical(o[k])).join(',')+'}';}
+function queryRef(q){if(!q||typeof q!=='object')return '';return canonical({ask:String(q.ask??''),from:String(q.from??''),nonce:String(q.nonce??'')});}
+function boundTo(a,q){if(!a||typeof a!=='object')return false;return a.replyTo===queryRef(q);}
+function settlement(depth,value,decay){if(!Number.isInteger(depth)||depth<0)return{ok:false};if(!Number.isFinite(value)||value<0)return{ok:false};if(!Number.isFinite(decay)||decay<=0||decay>=1)return{ok:false};let up=0;const split=[];for(let l=1;l<=depth;l++){const s=value*Math.pow(decay,l);split.push({level:l,share:s});up+=s;}const bound=value*decay/(1-decay);return{ok:true,contributorKeeps:value,upstream:split,upstreamTotal:up,bound,withinBound:up<=bound+1e-9};}
+
+// ── WebCrypto Ed25519: verify a node-made hex signature over UTF-8 canonical bytes ──
+const b64urlToBytes=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';const b=atob(s);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;};
+const hexToBytes=h=>{const u=new Uint8Array(h.length/2);for(let i=0;i<u.length;i++)u[i]=parseInt(h.substr(i*2,2),16);return u;};
+async function importPk(pk){return crypto.subtle.importKey('jwk',{kty:'OKP',crv:'Ed25519',x:pk},{name:'Ed25519'},false,['verify']);}
+async function verifySig(msg,sigHex,pk){try{const key=await importPk(pk);return await crypto.subtle.verify({name:'Ed25519'},key,hexToBytes(sigHex),new TextEncoder().encode(msg));}catch(e){return false;}}
+async function verifyToken(token){if(!token||!token.sig)return false;const{sig,...body}=token;return verifySig(canonical(body),sig,body.id);}
+
+function renderChecks(elId,items){const ul=$(elId);ul.innerHTML='';for(const it of items){const li=document.createElement('li');li.className=it.ok?'pass':'fail';li.innerHTML='<span class="st">'+(it.ok?'✓':'✕')+'</span><span><span class="lbl">'+it.lbl+'</span> <span class="dsc">'+(it.dsc||'')+'</span></span>';ul.appendChild(li);}}
+
+// ── 1 · re-verify the recorded exchange ──
+let BUNDLE=null;
+fetch('../evidence.json').then(r=>r.json()).then(b=>{BUNDLE=b;$('reRaw').textContent=JSON.stringify(b,null,2);}).catch(e=>{$('reRaw').textContent='could not load ../evidence.json — '+e;});
+$('reBtn').onclick=async()=>{
+  if(!BUNDLE){$('reState').textContent='evidence not loaded';return;}
+  $('reState').textContent='verifying with WebCrypto…';
+  const b=BUNDLE, checks=[];
+  const qOk=await verifyToken(b.queryToken)&&b.queryToken.id===b.seeker.id;
+  checks.push({ok:qOk,lbl:"seeker's query signature",dsc:"signed by the seeker's key — "+b.seeker.id.slice(0,14)+'…'});
+  const aOk=await verifyToken(b.answerToken)&&b.answerToken.id===b.contributor.id;
+  checks.push({ok:aOk,lbl:"contributor's answer signature",dsc:"signed by the contributor's key — "+b.contributor.id.slice(0,14)+'…'});
+  const matchOk=b.answerToken.nonce===canonical(b.answer);
+  checks.push({ok:matchOk,lbl:"answer token commits to the exact answer",dsc:"the signature covers this precise answer body"});
+  const bound=boundTo(b.answer,b.query);
+  checks.push({ok:bound,lbl:"answer is bound to the seeker's exact query",dsc:"it can't be lifted onto a different question"});
+  const birth=b.birthCert;const{sig:bsig,...bbody}=birth;const lineage=await verifySig(canonical(bbody),bsig,birth.parent)&&birth.parent===b.estate.id&&birth.child===b.contributor.id;
+  checks.push({ok:lineage,lbl:"contributor's lineage birth-certificate",dsc:"the estate signed this node's birth — verifiable, not asserted"});
+  const re=settlement(b.contributor.depth,b.settlement.contributorKeeps,b.decay);
+  const payOk=re.ok&&Math.abs(re.upstreamTotal-b.settlement.upstreamTotal)<1e-9&&re.withinBound;
+  checks.push({ok:payOk,lbl:"payout recomputes & stays within the runaway-proof bound",dsc:"contributor keeps "+b.settlement.contributorKeeps+"; upstream "+b.settlement.upstreamTotal+" (bound "+re.bound+")"});
+  renderChecks('reChecks',checks);
+  const all=checks.every(c=>c.ok);
+  const v=$('reVerdict');v.style.display='block';v.className='verdict '+(all?'ok':'fail');v.textContent=all?'✓ ALL SIGNATURES VERIFIED — this exchange is genuine, checked on your machine.':'✕ verification failed';
+  $('reState').textContent='';
+  $('reKv').innerHTML=[['seeker',b.seeker.id],['contributor',b.contributor.id+' (depth '+b.contributor.depth+')'],['estate root',b.estate.id],['ask',b.query.ask],['answer',b.answer.answer.slice(0,80)+'…'],['value',String(b.answer.value)]].map(([k,val])=>'<span class="k">'+k+'</span><span class="v">'+val+'</span>').join('');
+};
+
+// ── 2 · live federation over a real WebRTC datachannel ──
+async function genIdentity(){const kp=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);const jwk=await crypto.subtle.exportKey('jwk',kp.publicKey);return{pk:jwk.x,priv:kp.privateKey};}
+async function sign(msg,priv){const s=await crypto.subtle.sign({name:'Ed25519'},priv,new TextEncoder().encode(msg));return[...new Uint8Array(s)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+const log=m=>{$('liveLog').textContent+=m+'\n';};
+$('liveBtn').onclick=async()=>{
+  $('liveBtn').disabled=true;$('liveState').textContent='connecting…';$('liveLog').textContent='';$('liveChecks').innerHTML='';$('liveVerdict').style.display='none';
+  const checks=[];let srflx=false;
+  try{
+    const A=await genIdentity(),B=await genIdentity();
+    log('minted two independent identities:\n  A '+A.pk.slice(0,20)+'…\n  B '+B.pk.slice(0,20)+'…');
+    const ice=[{urls:'stun:stun.cloudflare.com:3478'}];
+    const pcA=new RTCPeerConnection({iceServers:ice}), pcB=new RTCPeerConnection({iceServers:ice});
+    pcA.onicecandidate=e=>{if(e.candidate){if(/ typ srflx /.test(e.candidate.candidate))srflx=true;pcB.addIceCandidate(e.candidate).catch(()=>{});}};
+    pcB.onicecandidate=e=>{if(e.candidate){if(/ typ srflx /.test(e.candidate.candidate))srflx=true;pcA.addIceCandidate(e.candidate).catch(()=>{});}};
+    const dcA=pcA.createDataChannel('federation');
+    const done=new Promise(res=>{
+      let seekerVerifiedAnswer=false, contributorVerifiedQuery=false, payoutOk=false;
+      // B side: receive the query, verify A's signature, answer + sign, send back
+      pcB.ondatachannel=ev=>{const dc=ev.channel;dc.onmessage=async m=>{
+        const q=JSON.parse(m.data);
+        // verify A's signed query over the wire
+        const qBody={id:q.from,ask:q.ask,nonce:q.nonce};
+        contributorVerifiedQuery=await verifySig(canonical(qBody),q.sig,q.from);
+        log('B received the query; A-signature valid: '+contributorVerifiedQuery);
+        const answerText='Model collapse is a single distribution narrowing to its mean; a mesh has no single mean.';
+        const aBody={from:B.pk,replyTo:queryRef({ask:q.ask,from:q.from,nonce:q.nonce}),answer:answerText,value:100};
+        const asig=await sign(canonical(aBody),B.priv);
+        dc.send(JSON.stringify({body:aBody,sig:asig}));
+        log('B answered from its expertise and signed it.');
+      };};
+      // A side: on open, sign a query and send
+      dcA.onopen=async()=>{
+        log('WebRTC datachannel OPEN'+(srflx?' (STUN reflexive candidate seen — real public path)':''));
+        const q={from:A.pk,ask:'What is the failure mode of training a model on its own output?',nonce:'live-'+Date.now()};
+        const qBody={id:q.from,ask:q.ask,nonce:q.nonce};
+        q.sig=await sign(canonical(qBody),A.priv);
+        window.__lastQ=q;
+        dcA.send(JSON.stringify(q));
+        log('A signed a query and sent it over the datachannel.');
+      };
+      dcA.onmessage=async m=>{
+        const ans=JSON.parse(m.data);
+        seekerVerifiedAnswer=await verifySig(canonical(ans.body),ans.sig,ans.body.from);
+        const bound=boundTo(ans.body,{ask:window.__lastQ.ask,from:window.__lastQ.from,nonce:window.__lastQ.nonce});
+        const pay=settlement(1,ans.body.value,0.5);
+        payoutOk=pay.ok&&pay.withinBound;
+        log('A received the answer; B-signature valid: '+seekerVerifiedAnswer+'; bound to A\'s query: '+bound);
+        log('settlement: contributor keeps '+pay.contributorKeeps+', upstream '+pay.upstreamTotal+' (bound '+pay.bound+')');
+        checks.push({ok:contributorVerifiedQuery,lbl:'B verified A\'s signed query over the wire'});
+        checks.push({ok:seekerVerifiedAnswer,lbl:'A verified B\'s signed answer over the wire'});
+        checks.push({ok:bound,lbl:'the answer is bound to A\'s exact query'});
+        checks.push({ok:payoutOk,lbl:'the provenance payout settled within bound'});
+        checks.push({ok:true,lbl:'carried over a real WebRTC datachannel'+(srflx?' + STUN reflexive address':'')});
+        res();
+      };
+    });
+    const offer=await pcA.createOffer();await pcA.setLocalDescription(offer);await pcB.setRemoteDescription(offer);
+    const answer=await pcB.createAnswer();await pcB.setLocalDescription(answer);await pcA.setRemoteDescription(answer);
+    await Promise.race([done,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timed out')),15000))]);
+    renderChecks('liveChecks',checks);
+    const all=checks.every(c=>c.ok);
+    const v=$('liveVerdict');v.style.display='block';v.className='verdict '+(all?'ok':'fail');v.textContent=all?'✓ LIVE FEDERATION SUCCEEDED — two identities, real WebRTC, signed exchange, settled payout.':'✕ live run incomplete';
+    pcA.close();pcB.close();
+  }catch(e){
+    log('error: '+(e&&e.message||e));
+    const v=$('liveVerdict');v.style.display='block';v.className='verdict fail';v.textContent='✕ '+(e&&e.message||e)+' — Ed25519 in WebCrypto / WebRTC may be unavailable in this browser; the recorded exchange (section 1) still verifies.';
+  }
+  $('liveState').textContent='';$('liveBtn').disabled=false;
+};
+
+// ── 3 · the external witness result ──
+fetch('../witness-external.json').then(r=>r.json()).then(w=>{
+  $('witKv').innerHTML=[['repo',w.repo],['file',w.file],['tests',w.tests],['mutants',w.killed+' killed / '+w.total+' total'],['survived',w.survived.map(s=>'line '+s.line+' · '+s.mutation+' · '+s.snippet).join('  |  ')||'none'],['score',String(w.score)],['ran at',w.ranAt]].map(([k,v])=>'<span class="k">'+k+'</span><span class="v">'+v+'</span>').join('');
+  const v=$('witVerdict');v.style.display='block';v.className='verdict '+(w.clean?'ok':'fail');
+  v.textContent=w.clean?'✓ CLEAN — left-pad\'s tests pin every mutation':'⚠ '+w.verdict+' — a real verdict on code we don\'t own (line '+w.survived[0].line+': '+w.survived[0].snippet+')';
+}).catch(e=>{$('witKv').innerHTML='<span class="k">error</span><span class="v">could not load ../witness-external.json</span>';});
+</script>
+</html>

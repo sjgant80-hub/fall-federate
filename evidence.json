@@ -1,0 +1,92 @@
+{
+  "v": 1,
+  "scenario": "A seeker node queries an independent contributor node; the contributor answers from its own expertise; the value is settled to the contributor with a bounded provenance royalty upstream.",
+  "decay": 0.5,
+  "estate": {
+    "id": "2Cm3l8EEAH20-fbt5RQFih9FPzjgeypwIfgE81x6KMk"
+  },
+  "seeker": {
+    "id": "Poxv6hf6v4vPfh_VybMKBenPKp_ckLEsoeyCupNGlXs",
+    "caps": [
+      "query"
+    ]
+  },
+  "contributor": {
+    "id": "AJSdH70H9KIh5fIDVNFi6_oPx-2-XzeXzyCbk3Wt3sU",
+    "caps": [
+      "answer"
+    ],
+    "depth": 1,
+    "root": "2Cm3l8EEAH20-fbt5RQFih9FPzjgeypwIfgE81x6KMk"
+  },
+  "birthCert": {
+    "kind": "birth",
+    "parent": "2Cm3l8EEAH20-fbt5RQFih9FPzjgeypwIfgE81x6KMk",
+    "child": "AJSdH70H9KIh5fIDVNFi6_oPx-2-XzeXzyCbk3Wt3sU",
+    "root": "2Cm3l8EEAH20-fbt5RQFih9FPzjgeypwIfgE81x6KMk",
+    "depth": 1,
+    "sig": "7372f3a70b1acb3f165db93e46462fab25b48b5de0494b6c6c4f8092d921a5749c8d25ce83283343b5151caa07bbb2e56f1794714f4e5f2ecf78366700c2ec01"
+  },
+  "query": {
+    "from": "Poxv6hf6v4vPfh_VybMKBenPKp_ckLEsoeyCupNGlXs",
+    "nonce": "demo-query-0001",
+    "ask": "What is the failure mode of training a model on its own output?"
+  },
+  "queryToken": {
+    "id": "Poxv6hf6v4vPfh_VybMKBenPKp_ckLEsoeyCupNGlXs",
+    "type": "query",
+    "cost": 1,
+    "spentAfter": 1,
+    "budgetTotal": 100,
+    "nonce": "demo-query-0001",
+    "sig": "56ce3b41f13def230fee95c99bd5fb20c0571a29c329883da57b9cdc84c5c3fb0859dfe04b24dd1c97d7c24a1814758243d8b8c3549b7cec2ec2c77aa37a9606"
+  },
+  "answer": {
+    "kind": "answer",
+    "from": "AJSdH70H9KIh5fIDVNFi6_oPx-2-XzeXzyCbk3Wt3sU",
+    "replyTo": "{\"ask\":\"What is the failure mode of training a model on its own output?\",\"from\":\"Poxv6hf6v4vPfh_VybMKBenPKp_ckLEsoeyCupNGlXs\",\"nonce\":\"demo-query-0001\"}",
+    "answer": "Model collapse (MAD): the rare cases vanish first, the distribution narrows, everything regresses to a bland mean. A mesh of independent nodes has no single mean to collapse toward — each node is a tail.",
+    "value": 100
+  },
+  "answerToken": {
+    "id": "AJSdH70H9KIh5fIDVNFi6_oPx-2-XzeXzyCbk3Wt3sU",
+    "type": "answer",
+    "cost": 1,
+    "spentAfter": 1,
+    "budgetTotal": 100,
+    "nonce": "{\"answer\":\"Model collapse (MAD): the rare cases vanish first, the distribution narrows, everything regresses to a bland mean. A mesh of independent nodes has no single mean to collapse toward — each node is a tail.\",\"from\":\"AJSdH70H9KIh5fIDVNFi6_oPx-2-XzeXzyCbk3Wt3sU\",\"kind\":\"answer\",\"replyTo\":\"{\\\"ask\\\":\\\"What is the failure mode of training a model on its own output?\\\",\\\"from\\\":\\\"Poxv6hf6v4vPfh_VybMKBenPKp_ckLEsoeyCupNGlXs\\\",\\\"nonce\\\":\\\"demo-query-0001\\\"}\",\"value\":100}",
+    "sig": "2f73ac7d33cec1b5e7e991639d93e81ea057c6ae45fe8f46803083df2d49ce1becdddee74d1f76eee7000e8cd972f2c503148fc43bb0b013c0e9cb7a27750902"
+  },
+  "settlement": {
+    "ok": true,
+    "contributorKeeps": 100,
+    "upstream": [
+      {
+        "level": 1,
+        "share": 50
+      }
+    ],
+    "upstreamTotal": 50,
+    "bound": 100,
+    "withinBound": true
+  },
+  "verifications": {
+    "queryTokenValid": true,
+    "answerTokenValid": true,
+    "answerTokenMatchesBody": true,
+    "answerBoundToQuery": true,
+    "contributorLineageValid": true,
+    "settlementWithinBound": true
+  },
+  "allValid": true,
+  "thirdPartyReverify": {
+    "shape": true,
+    "queryTokenValid": true,
+    "answerTokenValid": true,
+    "answerTokenMatchesBody": true,
+    "answerBoundToQuery": true,
+    "contributorLineageValid": true,
+    "settlementRecomputes": true,
+    "allValid": true
+  }
+}
