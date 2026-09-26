@@ -11,7 +11,9 @@ jobs:
         run: |
           node wallet.test.mjs
           node federation.test.mjs
+          node signaling.test.mjs
       - name: mutation gate (witness) — pinned to a tag, so the gate is a fact about this code
         run: |
           git clone --depth 1 --branch v0.2 https://github.com/sjgant80-hub/witness.git .witness
           node .witness/witness.mjs mutate federation-kernel.mjs --cap 400 --test node federation.test.mjs
+          node .witness/witness.mjs mutate signaling.mjs         --cap 400 --test node signaling.test.mjs
