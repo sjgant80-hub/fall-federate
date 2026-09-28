@@ -2,6 +2,11 @@
 
 **▶ [Proof of play — /test](https://sjgant80-hub.github.io/fall-federate/test/)** — re-verify it in your own browser.
 
+<!-- film-2026-09 -->
+**▶ [Watch the 90-second film](https://www.ai-nativesolutions.com/explainer.html#film)** — federation and the mesh, inside the whole estate · [The brochure (PDF)](https://www.ai-nativesolutions.com/fall-os-prospectus.pdf) · [Every number, sourced](https://www.ai-nativesolutions.com/explainer.html#facts)
+
+[![Peers connecting directly with no server between](https://www.ai-nativesolutions.com/media/images/mesh-no-server.jpg)](https://www.ai-nativesolutions.com/explainer.html#film)
+
 Minimum-viable **federation (N=2)**: two *genuinely independent* sovereign identities exchange a signed
 query/answer over a **real WebRTC datachannel** and settle a **bounded provenance payout** — every signature
 checkable by a third party against nothing but the public keys. Plus the estate's mutation gate run against a
