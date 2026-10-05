@@ -1,0 +1,22 @@
+# fall-federate
+
+> Minimum-viable sovereign federation and a cross-machine signed-hop-chain mesh test. Two genuinely
+> independent Ed25519 identities exchange a signed query/answer and settle a bounded provenance payout
+> over real WebRTC (STUN only, no TURN, no signalling server) — and relay a message across two physical
+> machines as a chain of per-hop-signed, hash-chained hops, with measured latency and delivery evaluated
+> against a claim registered in advance. Every claim is re-runnable in the browser and re-verifiable by a
+> third party from signed bundles alone. All logic is gated by the estate's `witness` mutation gate.
+
+## Live pages
+- [Cross-machine mesh test](https://sjgant80-hub.github.io/fall-federate/crossing/): the signed hop chain across two machines on two networks — the honest gap (the mesh had only ever been proven on one laptop) closed as far as it can be before a second device, with the real cross-machine run pre-registered and measure-only.
+- [Proof of play (/test)](https://sjgant80-hub.github.io/fall-federate/test/): re-verify the recorded federation, run a fresh one over WebRTC, and see the mutation gate run against an external repo.
+- [Join (/join)](https://sjgant80-hub.github.io/fall-federate/join/): federate one signed query/answer with another person over WebRTC.
+
+## What is proven vs pending
+- Proven: the signed hop-chain kernel (`hopchain-kernel.mjs`, witness 45/45 clean); the wire cold in Node (`hopchain.test.mjs` — real Ed25519 chain, tamper and forgery rejected); the transport + harness on one machine (same-machine smoke test).
+- Pending a second physical device: the cross-machine measurement itself — N>=2 signed hops across two machines on two networks, latency + delivery measured, evaluated against `prereg.json`. May partly fail (STUN-only cannot always traverse two symmetric NATs); that is a reported finding, not a bug.
+
+## Source and provenance
+- [hopchain-kernel.mjs](https://github.com/sjgant80-hub/fall-federate/blob/main/hopchain-kernel.mjs): the pure, witness-gated signed-hop-chain invariants.
+- [prereg.json](https://github.com/sjgant80-hub/fall-federate/blob/main/prereg.json): the pre-registered cross-machine claim and thresholds.
+- Trust rail: the estate's `witness` mutation gate. Composes the-wallet (sovereign agent-wallet + lineage). Built on the Konomi architecture, created by Thomas Frumkin. Mesh and relay build on Gary W. Floyd's work. Author: Kar (karma-didy).

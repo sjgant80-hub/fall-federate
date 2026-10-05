@@ -3,18 +3,41 @@
 <meta charset="utf-8">
 <title>fall-federate</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Minimum-viable federation: two independent sovereign identities exchange a signed query/answer over real WebRTC and settle a bounded provenance payout, re-verifiable in your browser. Plus the estate's mutation gate run against a real external repo.">
+<meta name="description" content="Sovereign federation and a cross-machine signed-hop-chain mesh test: independent identities exchange signed messages over real WebRTC (STUN only, no server, no TURN), with measured latency and delivery, re-verifiable in your browser.">
 <meta name="theme-color" content="#0b0e14">
-<meta http-equiv="refresh" content="0; url=./test/">
+<link rel="canonical" href="https://sjgant80-hub.github.io/fall-federate/">
 <style>
-  body{margin:0;background:#080b11;color:#e8eef6;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;text-align:center;padding:20px}
-  a{color:#5c7cfa}
-  .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+  :root{--bg:#f7f8fa;--panel:#fff;--panel2:#f1f4f8;--ink:#0d1520;--muted:#576373;--line:#e3e8ef;--accent:#3b5bdb;--accent-ink:#fff;--ok:#0c9463;--faint:#8a94a3;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace;--r:14px}
+  @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#080b11;--panel:#111722;--panel2:#161d2a;--ink:#e8eef6;--muted:#8d99a9;--line:#1e2735;--accent:#5c7cfa;--accent-ink:#080b11;--ok:#2fbd85;--faint:#5b6675}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6}
+  .wrap{max-width:780px;margin:0 auto;padding:40px 18px 60px}
+  a{color:var(--accent);text-decoration:none}
+  h1{font-size:clamp(1.9rem,6vw,2.7rem);letter-spacing:-.03em;margin:.3rem 0 .4rem;font-weight:850}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  p.lead{color:var(--muted);font-size:1.06rem;max-width:62ch}
+  .card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-top:14px;transition:border-color .15s,transform .15s}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .card b{font-size:1.1rem;color:var(--ink)}
+  .card .d{color:var(--muted);font-size:.92rem;margin-top:.2rem}
+  .card.hero{border-color:color-mix(in srgb,var(--accent) 40%,var(--line));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 20%,transparent)}
+  .tag{font-family:var(--mono);font-size:.66rem;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:20px;padding:.14rem .5rem;margin-left:8px}
+  footer{margin-top:26px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:16px}
+  .mono{font-family:var(--mono)}
 </style>
-<div>
-  <h1>fall-federate</h1>
-  <p>Two nodes, one signed exchange, one payout — proven and re-runnable.</p>
-  <p><a href="./test/">▶ open the proof of play → /test/</a></p>
-  <p class="mono" style="opacity:.6;font-size:.85rem">redirecting…</p>
+<div class="wrap">
+  <span class="eyebrow">fall-federate</span>
+  <h1>Sovereign federation, and the mesh crossing a real machine boundary.</h1>
+  <p class="lead">Genuinely independent identities exchange <b>signed</b> messages over <b>real WebRTC</b> — STUN only, no server, no TURN. Every claim is re-runnable in your browser and re-verifiable from signatures alone. Logic gated by the estate's <span class="mono">witness</span> mutation gate.</p>
+
+  <a class="card hero" href="./crossing/"><b>▶ Cross-machine mesh test <span class="tag">new</span></b><div class="d">Relay a message across two machines on two networks as a chain of per-hop-signed, hash-chained hops. Measured latency + delivery, evaluated against a pre-registered claim. The honest gap — the mesh had only ever been proven on one laptop — closed as far as it can be before a second device.</div></a>
+
+  <a class="card" href="./test/"><b>Proof of play — /test</b><div class="d">Re-verify a recorded signed federation, run a fresh one over WebRTC, and watch the mutation gate run against a real external repo.</div></a>
+
+  <a class="card" href="./join/"><b>Federate with another person — /join</b><div class="d">Trade two codes by hand and run one signed query/answer exchange peer-to-peer, no server between you.</div></a>
+
+  <footer>
+    Trust rail: the estate's <span class="mono">witness</span> mutation gate. Composes <b>the-wallet</b>. Built on the Konomi architecture, created by <b>Thomas Frumkin</b>; mesh &amp; relay build on <b>Gary W. Floyd</b>'s work. — Kar (karma-didy) · <a href="https://github.com/sjgant80-hub/fall-federate">source</a>
+  </footer>
 </div>
 </html>

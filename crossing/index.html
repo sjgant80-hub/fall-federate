@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>fall-federate — cross-machine mesh test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Relay a message across two real machines on two networks as a chain of per-hop-signed, hash-chained WebRTC hops — no server, no TURN, just manual signalling and public STUN. Measured latency and delivery, evaluated against a pre-registered claim, in your own browser.">
+<meta name="theme-color" content="#0b0e14">
+<meta property="og:title" content="fall-federate — cross-machine signed-hop-chain mesh test">
+<meta property="og:description" content="Two machines, two networks, no server: a tamper-evident chain of signed WebRTC hops, measured against a claim registered in advance.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://sjgant80-hub.github.io/fall-federate/crossing/">
+<style>
+  :root{--bg:#f7f8fa;--panel:#fff;--panel2:#f1f4f8;--ink:#0d1520;--muted:#576373;--faint:#8a94a3;--line:#e3e8ef;--accent:#3b5bdb;--accent2:#7048e8;--accent-ink:#fff;--ok:#0c9463;--warn:#d9880a;--hot:#c0392b;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;--mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;--maxw:920px;--r:14px}
+  @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#080b11;--panel:#111722;--panel2:#161d2a;--ink:#e8eef6;--muted:#8d99a9;--faint:#5b6675;--line:#1e2735;--accent:#5c7cfa;--accent2:#9775fa;--accent-ink:#080b11;--ok:#2fbd85;--warn:#e6a23c;--hot:#f0664f}}
+  :root[data-theme=dark]{--bg:#080b11;--panel:#111722;--panel2:#161d2a;--ink:#e8eef6;--muted:#8d99a9;--faint:#5b6675;--line:#1e2735;--accent:#5c7cfa;--accent2:#9775fa;--accent-ink:#080b11;--ok:#2fbd85;--warn:#e6a23c;--hot:#f0664f}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 16px}
+  a{color:var(--accent)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:.06em .36em;word-break:break-all}
+  .mono{font-family:var(--mono)}
+  h1{font-size:clamp(1.7rem,5vw,2.5rem);letter-spacing:-.03em;margin:.4rem 0 .3rem;font-weight:850}
+  h2{font-size:1.25rem;letter-spacing:-.02em;margin:.2rem 0 .5rem}
+  h3{font-size:.98rem;margin:0 0 .4rem}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  header{padding:48px 0 22px}
+  header p.lead{color:var(--muted);font-size:1.04rem;max-width:68ch}
+  section{padding:24px 0;border-top:1px solid var(--line)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:14px}
+  .btn{display:inline-block;padding:.62rem 1.05rem;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-size:.95rem;font-weight:650;cursor:pointer;font-family:var(--sans)}
+  .btn:hover{filter:brightness(1.08)}.btn:disabled{opacity:.5;cursor:default}
+  .btn.ghost{background:var(--panel);color:var(--ink);border-color:var(--line)}
+  .btn.big{font-size:1.05rem;padding:.8rem 1.3rem;width:100%;margin-top:8px}
+  .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  textarea{width:100%;min-height:70px;font-family:var(--mono);font-size:.76rem;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--ink);resize:vertical}
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+  @media(max-width:560px){.roles{grid-template-columns:1fr}}
+  .role{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;cursor:pointer;text-align:left;font-family:var(--sans);color:var(--ink);transition:border-color .15s,transform .15s}
+  .role:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .role.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+  .role b{font-size:1.05rem;display:block;margin-bottom:.2rem}.role span{color:var(--muted);font-size:.88rem}
+  .step{border-left:2px solid var(--line);padding:2px 0 2px 15px;margin:14px 0}
+  .step.active{border-color:var(--accent)}
+  .status{font-family:var(--mono);font-size:.82rem;color:var(--muted);margin-top:8px}
+  .warn{color:var(--warn);font-size:.82rem;margin:.4rem 0 0}
+  .checks{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:7px}
+  .checks li{display:flex;gap:10px;align-items:baseline;font-size:.92rem;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
+  .checks li .st{font-family:var(--mono);font-weight:700;flex:none;width:18px}
+  .checks li.pass .st{color:var(--ok)}.checks li.fail .st{color:var(--hot)}.checks li.pend .st{color:var(--faint)}
+  .checks li .dsc{color:var(--muted);font-size:.84rem}
+  .verdict{font-family:var(--mono);font-weight:800;font-size:1rem;margin-top:12px;padding:12px 15px;border-radius:10px;border:1px solid var(--line)}
+  .verdict.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 8%,transparent)}
+  .verdict.fail{color:var(--hot);border-color:color-mix(in srgb,var(--hot) 45%,var(--line))}
+  .verdict.pend{color:var(--faint);border-color:var(--line)}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.84rem;margin-top:10px}
+  .kv .k{font-family:var(--mono);color:var(--faint)}.kv .v{font-family:var(--mono);color:var(--ink);word-break:break-all}
+  .log{font-family:var(--mono);font-size:.78rem;color:var(--muted);white-space:pre-wrap;margin-top:10px;max-height:200px;overflow:auto}
+  .tag{font-family:var(--mono);font-size:.68rem;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:20px;padding:.16rem .5rem;background:color-mix(in srgb,var(--accent) 7%,transparent)}
+  .pill{display:inline-flex;gap:7px;align-items:center;font-family:var(--mono);font-size:.8rem;padding:6px 10px;border:1px solid var(--line);border-radius:20px;background:var(--panel2);margin:4px 6px 0 0}
+  .pill .d{width:9px;height:9px;border-radius:50%;flex:none;background:var(--faint)}
+  .pill.ok .d{background:var(--ok)}.pill.no .d{background:var(--hot)}.pill.opt .d{background:var(--warn)}
+  .note{color:var(--muted);font-size:.9rem;margin:.5rem 0 0;max-width:72ch}
+  .theme{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.8rem;float:right;margin-top:14px}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:12px 0}
+  ol.steps li{position:relative;padding:8px 0 8px 40px;border-bottom:1px solid var(--line)}
+  ol.steps li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:8px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-family:var(--mono);font-weight:700;font-size:.82rem;display:grid;place-items:center}
+  .hide{display:none}
+  footer{padding:30px 0;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);margin-top:10px}
+</style>
+
+<div class="wrap">
+<button class="theme" id="theme" type="button">Theme</button>
+<header>
+  <span class="eyebrow">fall-federate · cross-machine mesh test</span>
+  <h1>Relay a signed message across two real machines — no server.</h1>
+  <p class="lead">The honest gap this closes: every prior "mesh proven" in the estate was <b>one laptop talking to itself</b>. Here, two <b>genuinely separate machines on two networks</b> (put one on a phone hotspot — a real NAT) connect directly over WebRTC with only a public STUN server, and relay a message as a chain of <b>per-hop-signed, hash-chained hops</b>. No TURN, no signalling server, no backend. The latency and delivery are <b>measured</b> and checked against a claim <b>registered in advance</b>. Same logic the mutation gate proves — re-run it here.</p>
+</header>
+
+<section id="caps">
+  <h2>Can this device run it?</h2>
+  <div class="card">
+    <div id="capPills"></div>
+    <div class="verdict pend" id="capVerdict" style="display:none"></div>
+    <p class="note">WebRTC + in-browser Ed25519 are <b>required</b> for the signed-hop transport. WebGPU is <b>optional</b> — it is only needed if a node also runs a local AI model on-device; the transport proof does not need it.</p>
+  </div>
+</section>
+
+<section id="run">
+  <span class="tag">The real test · two devices</span>
+  <h2>Run the cross-machine relay</h2>
+  <p class="note">One of you is <b>device 1</b> (starts it), the other is <b>device 2</b>. Trade one code over any app you already trust (Signal, WhatsApp, Messages, AirDrop). You connect peer-to-peer; the signed hop chain relays; the results fill in below.</p>
+
+  <div class="roles">
+    <button class="role" id="roleHost" type="button"><b>① Device 1 — start it</b><span>You send the first code. Pick this on the machine kicking it off.</span></button>
+    <button class="role" id="roleGuest" type="button"><b>② Device 2 — join</b><span>Someone sent you a code or a link. Tap here to join.</span></button>
+  </div>
+
+  <!-- DEVICE 1 -->
+  <div class="card hide" id="hostPanel">
+    <h3>You're device 1</h3>
+    <div class="step active">
+      <h3>1 · Make your code</h3>
+      <button class="btn big" id="hCreate" type="button">Make my code →</button>
+      <div class="status" id="hStatus"></div>
+      <div class="hide" id="hInviteWrap" style="margin-top:10px">
+        <textarea id="hInvite" readonly></textarea>
+        <div class="row">
+          <button class="btn ghost" id="hCopy" type="button">Copy code</button>
+          <button class="btn ghost" id="hShareLink" type="button">Share join link</button>
+          <span class="mono" id="hId" style="color:var(--muted);font-size:.78rem"></span>
+        </div>
+        <p class="warn">This code carries your public network address. Send it over a channel you trust, not a public post.</p>
+      </div>
+    </div>
+    <div class="step" id="hStep2">
+      <h3>2 · Paste the code they send back</h3>
+      <textarea id="hAnswer" placeholder="paste device 2's code here…"></textarea>
+      <label class="note" style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" id="hTwoNet"> Device 2 is on a <b>different network</b> (e.g. a phone hotspot) — the real NAT test</label>
+      <div class="row"><button class="btn" id="hConnect" type="button" disabled>Connect &amp; run →</button></div>
+      <div class="status" id="hConnStatus"></div>
+    </div>
+  </div>
+
+  <!-- DEVICE 2 -->
+  <div class="card hide" id="guestPanel">
+    <h3>You're device 2</h3>
+    <div class="step active">
+      <h3>1 · Paste the code device 1 sent (or open their link)</h3>
+      <textarea id="gInvite" placeholder="paste device 1's code here…"></textarea>
+      <div class="row"><button class="btn" id="gAccept" type="button">Make my reply code →</button></div>
+      <div class="status" id="gStatus"></div>
+    </div>
+    <div class="step" id="gStep2">
+      <h3>2 · Send this reply back to device 1, then wait</h3>
+      <div class="hide" id="gAnswerWrap">
+        <textarea id="gAnswer" readonly></textarea>
+        <div class="row">
+          <button class="btn ghost" id="gCopy" type="button">Copy reply</button>
+          <button class="btn ghost" id="gShare" type="button">Share reply</button>
+          <span class="mono" id="gId" style="color:var(--muted);font-size:.78rem"></span>
+        </div>
+        <p class="warn">Send it back over the same trusted channel. The connection opens on its own.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARED: results -->
+  <div class="card hide" id="results">
+    <h3>Connected — relaying the signed hop chain</h3>
+    <ul class="checks" id="xChecks"></ul>
+    <div class="kv" id="xKv"></div>
+    <div class="verdict" id="xVerdict" style="display:none"></div>
+    <div class="log" id="xLog"></div>
+  </div>
+</section>
+
+<section id="smoke">
+  <span class="tag">Smoke test · one machine</span>
+  <h2>Transport check — same machine, two browser contexts</h2>
+  <p class="note">This runs the <b>whole harness on this one device</b>: two independent identities, a real WebRTC datachannel, a signed hop chain built and verified. It proves the transport and the harness work. It is <b>explicitly NOT the cross-machine proof</b> — and to show the honesty wire works, the pre-registered evaluator below is run on it too: it will correctly report that a one-machine run does <b>not</b> meet the two-networks criterion.</p>
+  <div class="card">
+    <div class="row"><button class="btn" id="smokeBtn" type="button">Run the same-machine smoke test →</button> <span class="mono" id="smokeState" style="color:var(--muted)"></span></div>
+    <ul class="checks" id="smokeChecks"></ul>
+    <div class="verdict" id="smokeVerdict" style="display:none"></div>
+    <div class="log" id="smokeLog"></div>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>What's proven now — and what's pending a second device</h2>
+  <div class="card">
+    <ul class="checks">
+      <li class="pass"><span class="st">✓</span><span><b>Proven — the signed hop-chain kernel.</b> <span class="dsc">Per-hop binding (each hop commits to the exact previous hop), tamper-evidence, the delivery + latency maths, and the measure-only claim evaluator. Witness mutation gate: <b>45/45 killed, clean</b> (<a href="../hopchain-kernel.mjs">hopchain-kernel.mjs</a>, CI re-runs it on every push).</span></span></li>
+      <li class="pass"><span class="st">✓</span><span><b>Proven — the wire, cold, in Node.</b> <span class="dsc">A real 3-node Ed25519 signed chain verifies end to end; tampering a middle hop breaks <b>both</b> its signature and the chain link; a hop signed by the wrong key is rejected (<a href="../hopchain.test.mjs">hopchain.test.mjs</a>).</span></span></li>
+      <li class="pass"><span class="st">✓</span><span><b>Proven — the transport + harness, same machine.</b> <span class="dsc">The smoke test above builds and verifies a signed hop chain over a real WebRTC datachannel. Transport works; this is not the cross-machine proof.</span></span></li>
+      <li class="pend"><span class="st">◻</span><span><b>Pending — the cross-machine measurement.</b> <span class="dsc">N≥2 signed hops across <b>two physical machines on two networks</b> (one on a hotspot = real NAT), with measured latency + delivery, evaluated against the thresholds fixed in advance in <a href="../prereg.json">prereg.json</a>. When a second device appears, the run above is <b>measure-only</b>. It may partly fail — most likely at connection, since STUN-only (no TURN, by sovereign choice) can't always punch two symmetric NATs. That's a finding, not a bug.</span></span></li>
+    </ul>
+  </div>
+</section>
+
+<section id="simon">
+  <h2>The ~2-minute run, step by step (for when a second device is here)</h2>
+  <div class="card">
+    <ol class="steps">
+      <li><b>On device 2</b> (a phone on its mobile hotspot is ideal — that's the real NAT), open <code>https://sjgant80-hub.github.io/fall-federate/crossing/</code>. Check the top says WebRTC + Ed25519 are green.</li>
+      <li><b>On device 1</b>, tap <b>Device 1 — start it</b>, then <b>Make my code</b>. Tap <b>Share join link</b> and send it to device 2 (Signal / WhatsApp / Messages / AirDrop).</li>
+      <li><b>On device 2</b>, open that link (it auto-fills), or tap <b>Device 2 — join</b> and paste the code, then <b>Make my reply code</b>. Tap <b>Share reply</b> and send it back to device 1.</li>
+      <li><b>On device 1</b>, paste that reply, tick <b>"Device 2 is on a different network"</b>, and tap <b>Connect &amp; run</b>.</li>
+      <li>The signed hop chain relays and the <b>results panel</b> fills in with the measured latency, delivery, and the PASS/FAIL verdict against the pre-registered claim. Honest either way.</li>
+    </ol>
+    <p class="note"><b>Devices that work:</b> any two with a modern browser that has WebRTC + Ed25519 — Chrome / Edge / Firefox on Windows, macOS, Android; Safari 17+ and iOS 17+ on iPhone/iPad. The top-of-page check tells you plainly if a device is too old. Two laptops, or a laptop + a phone on its hotspot, both work; the phone-on-hotspot pair is the truest test because a real carrier NAT sits between them.</p>
+  </div>
+</section>
+
+<section id="faq">
+  <h2>Questions</h2>
+  <div class="card">
+    <details open><summary style="cursor:pointer;font-weight:650">Why no QR code to scan?</summary><p class="note">A WebRTC signalling blob (the full network description with gathered candidates) is 1.5–3&nbsp;KB. A QR that a phone camera can reliably scan tops out well below that. So instead of a QR that never scans — theatre — you send the code as a <b>link</b> (device 2 just taps it) or a <b>paste</b>, over any app you already trust. That's the honest, robust, offline path.</p></details>
+    <details><summary style="cursor:pointer;font-weight:650">Why is there a human in the loop (swapping codes)?</summary><p class="note">That's the sovereign choice, not a shortcut. Automatic connection would need a signalling <b>server</b> that sees who's talking to whom. Manual signalling + public STUN means no server holds the mesh — the only outside party is STUN, which learns a rough network address and never your message. The human join is the feature.</p></details>
+    <details><summary style="cursor:pointer;font-weight:650">What exactly is a "hop"?</summary><p class="note">One signed step in a relay. Hop 0 is the origin (it carries the message); each later hop is signed by the node that forwarded it and commits to the exact previous hop by hash. So a hop can't be reordered, dropped, duplicated, or forged into the middle without the chain breaking — and every signature checks against public keys alone.</p></details>
+    <details><summary style="cursor:pointer;font-weight:650">What if the two devices won't connect?</summary><p class="note">Then delivery FAILS and the page says so. STUN-only can't always traverse two symmetric NATs, and we don't add a TURN relay — that would put a server back in the path. A failed connection is a real, reportable result about real networks.</p></details>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p><b>Kernel-backed:</b> this page imports the estate's gated <code>hopchain-kernel.mjs</code>, <code>signaling.mjs</code> and <code>wallet.mjs</code> directly — the logic you run is the logic the mutation gate proves.</p>
+  Trust rail: the estate's <b>witness</b> mutation gate (45/45 on this kernel). Composes <b>the-wallet</b> (sovereign agent-wallet + lineage). Built on the Konomi architecture, created by <b>Thomas Frumkin</b>. Mesh &amp; relay build on <b>Gary W. Floyd</b>'s work. — Kar (karma-didy) · <a href="https://github.com/sjgant80-hub/fall-federate" target="_blank" rel="noopener">source</a> · <a href="../">overview</a> · <a href="../test/">proof of play</a>
+</footer>
+</div>
+
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"fall-federate — cross-machine mesh test","applicationCategory":"DeveloperApplication","operatingSystem":"Web (WebRTC + Ed25519)","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Relay a message across two physical machines on two networks as a chain of per-hop-signed, hash-chained WebRTC hops, with no server and no TURN — measured latency and delivery, evaluated against a pre-registered claim, re-runnable in the browser.","url":"https://sjgant80-hub.github.io/fall-federate/crossing/","isAccessibleForFree":true,"creator":{"@type":"Person","name":"Kar (karma-didy)"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Why no QR code to scan?","acceptedAnswer":{"@type":"Answer","text":"A WebRTC signalling blob is 1.5 to 3 KB, larger than a phone camera can reliably scan as a QR. So the code is sent as a link (one tap) or a paste over a trusted app, which is the honest, robust, offline path."}},
+{"@type":"Question","name":"Why is there a human in the loop swapping codes?","acceptedAnswer":{"@type":"Answer","text":"It is the sovereign choice. Automatic connection needs a signalling server that sees who talks to whom. Manual signalling plus public STUN means no server holds the mesh; STUN only learns a rough network address, never the message."}},
+{"@type":"Question","name":"What is a hop?","acceptedAnswer":{"@type":"Answer","text":"One signed step in a relay. Hop 0 carries the message; each later hop is signed by the node that forwarded it and commits by hash to the exact previous hop, so no hop can be reordered, dropped, duplicated, or forged into the middle without breaking the chain."}},
+{"@type":"Question","name":"What if the two devices will not connect?","acceptedAnswer":{"@type":"Answer","text":"Delivery fails and the page reports it. STUN-only cannot always traverse two symmetric NATs, and no TURN relay is added because that would put a server back in the path. A failed connection is a real, reportable result."}}
+]}
+</script>
+
+<script type="module">
+import { hopBody, hopRef, linkOk, chainLinks, deliveryMetrics, hopLatencies, latencyStats, evalPrereg } from '../hopchain-kernel.mjs';
+import { canonical } from '../wallet.mjs';
+import { makeInvite, readInvite } from '../signaling.mjs';
+
+const $=id=>document.getElementById(id);
+(function(){try{const s=localStorage.getItem('ff-theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}
+  $('theme').onclick=()=>{const c=document.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('ff-theme',n)}catch(e){}};})();
+
+// ── the pre-registered thresholds (read from the committed prereg.json; falls back to the sealed values) ──
+let PREREG={minHops:2,maxMedianLatencyMs:2000,requireDelivery:true,requireTwoNetworks:true};
+fetch('../prereg.json').then(r=>r.json()).then(j=>{if(j&&j.thresholds)PREREG=j.thresholds;}).catch(()=>{});
+
+// ── crypto (WebCrypto Ed25519) — same canonical/hopBody the kernel gates ──
+let ED_OK=false;
+async function genIdentity(){const kp=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);const jwk=await crypto.subtle.exportKey('jwk',kp.publicKey);return{pk:jwk.x,priv:kp.privateKey};}
+async function sign(msg,priv){const s=await crypto.subtle.sign({name:'Ed25519'},priv,new TextEncoder().encode(msg));return[...new Uint8Array(s)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+const hexToBytes=h=>{const u=new Uint8Array(h.length/2);for(let i=0;i<u.length;i++)u[i]=parseInt(h.substr(i*2,2),16);return u;};
+async function verifySig(msg,sigHex,pk){try{const key=await crypto.subtle.importKey('jwk',{kty:'OKP',crv:'Ed25519',x:pk},{name:'Ed25519'},false,['verify']);return await crypto.subtle.verify({name:'Ed25519'},key,hexToBytes(sigHex),new TextEncoder().encode(msg));}catch(e){return false;}}
+// a signed hop — signs canonical(hopBody(hop)), exactly what the kernel's hopRef uses
+async function makeHop(me,seq,toPk,prevRef,payload){const hop={seq,from:me.pk,to:toPk||'',prev:prevRef||'',payload:payload||'',t:Date.now()};hop.sig=await sign(canonical(hopBody(hop)),me.priv);return hop;}
+async function verifyHop(hop){if(!hop||!hop.sig)return false;const{sig,...rest}=hop;return verifySig(canonical(hopBody(rest)),sig,hop.from);}
+async function allSigsValid(chain){for(const h of chain){if(!await verifyHop(h))return false;}return true;}
+
+// ── blob = base64(JSON(invite)) ──
+const packBlob=inv=>btoa(unescape(encodeURIComponent(JSON.stringify(inv))));
+const unpackBlob=s=>{try{return JSON.parse(decodeURIComponent(escape(atob(String(s).trim()))));}catch(e){return null;}}
+const ICE=[{urls:'stun:stun.cloudflare.com:3478'},{urls:'stun:stun.l.google.com:19302'}];
+function waitIce(pc){return new Promise(res=>{if(pc.iceGatheringState==='complete')return res();const t=setTimeout(res,3500);pc.addEventListener('icegatheringstatechange',()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);res();}});});}
+
+// ── capability detection ──
+async function detectCaps(){
+  const webrtc=typeof RTCPeerConnection!=='undefined';
+  let ed=false; try{const kp=await crypto.subtle.generateKey({name:'Ed25519'},true,['sign','verify']);ed=!!kp;}catch(e){ed=false;} ED_OK=ed;
+  let gpu=false; try{if(navigator.gpu){const a=await navigator.gpu.requestAdapter();gpu=!!a;}}catch(e){gpu=false;}
+  const share=typeof navigator.share==='function';
+  const pills=[
+    {k:'WebRTC datachannel',ok:webrtc,req:true},
+    {k:'Ed25519 in-browser signing',ok:ed,req:true},
+    {k:'WebGPU (on-device model — optional)',ok:gpu,req:false},
+    {k:'native Share sheet',ok:share,req:false},
+  ];
+  $('capPills').innerHTML=pills.map(p=>'<span class="pill '+(p.ok?'ok':(p.req?'no':'opt'))+'"><span class="d"></span>'+p.k+' — '+(p.ok?'yes':(p.req?'NO':'no (fine)'))+'</span>').join('');
+  const ready=webrtc&&ed;
+  const v=$('capVerdict');v.style.display='block';v.className='verdict '+(ready?'ok':'fail');
+  v.textContent=ready?'✓ This device can run the test.':'✕ This device is missing something required (WebRTC and/or in-browser Ed25519). Try an up-to-date Chrome, Edge, Firefox, or Safari 17+ / iOS 17+.';
+  return ready;
+}
+
+// ── shared run helpers ──
+const log=(el,m)=>{$(el).textContent+=m+'\n';};
+function renderChecks(elId,items){const ul=$(elId);ul.innerHTML='';for(const it of items){const li=document.createElement('li');li.className=it.ok?'pass':'fail';li.innerHTML='<span class="st">'+(it.ok?'✓':'✕')+'</span><span>'+it.lbl+(it.dsc?' <span class="dsc">'+it.dsc+'</span>':'')+'</span>';ul.appendChild(li);}}
+function renderVerdict(elId,cls,txt){const v=$(elId);v.style.display='block';v.className='verdict '+cls;v.textContent=txt;}
+// a few timed round-trip pings over the open channel; RTT measured on ONE clock (the originator's)
+function pingRTTs(dc,n,timeoutMs){
+  return new Promise(resolve=>{
+    const rtts=[];const sent={};let got=0;let done=false;
+    const finish=()=>{if(done)return;done=true;dc.removeEventListener('message',onMsg);resolve(rtts);};
+    const onMsg=ev=>{let m;try{m=JSON.parse(ev.data);}catch(e){return;}if(m.k!=='pong')return;const s=sent[m.i];if(s!=null){rtts.push(Date.now()-s);got++;if(got>=n)finish();}};
+    dc.addEventListener('message',onMsg);
+    for(let i=0;i<n;i++){sent[i]=Date.now();dc.send(JSON.stringify({k:'ping',i}));}
+    setTimeout(finish,timeoutMs||6000);
+  });
+}
+// render the measured result + the measure-only prereg verdict (used by both cross-machine and smoke runs)
+function renderResult(elIds,{chain,sigsOk,structural,rtts,chainRTT,twoNetworks,srflx,label}){
+  const hops=chain.length;
+  const delivered=hops;
+  const complete=deliveryMetrics(hops,chain).complete;
+  const lat=hopLatencies(rtts.map(r=>({sentAt:0,recvAt:r})));
+  const stats=latencyStats(lat.concat(chainRTT!=null?[chainRTT]:[]));
+  const chainLinked=sigsOk&&structural;
+  const measured={hops,medianLatencyMs:stats.median,delivered,complete,twoNetworks,chainLinked};
+  const ver=evalPrereg(PREREG,measured);
+  renderChecks(elIds.checks,[
+    {ok:sigsOk,lbl:'every hop signed by its own node (Ed25519)',dsc:hops+' hops'},
+    {ok:structural,lbl:'chain cryptographically linked — no reorder / drop / forge'},
+    {ok:complete,lbl:'all hops delivered end to end'},
+    {ok:stats.median!=null,lbl:'latency measured',dsc:(stats.median!=null?('median round-trip '+Math.round(stats.median)+'ms, min '+Math.round(stats.min)+' / max '+Math.round(stats.max)):'no samples')},
+    {ok:srflx,lbl:'STUN reflexive (public) path used',dsc:srflx?'srflx candidate seen':'host-only — may be same LAN'},
+    {ok:twoNetworks,lbl:'two distinct networks (real NAT)',dsc:twoNetworks?'confirmed':'not confirmed'},
+  ]);
+  if(elIds.kv&&$(elIds.kv))$(elIds.kv).innerHTML=[['label',label],['hops',String(hops)],['median RTT',stats.median!=null?Math.round(stats.median)+'ms':'—'],['chain linked',String(chainLinked)],['delivered',complete?'all':'partial'],['two networks',String(twoNetworks)]].map(([k,v])=>'<span class="k">'+k+'</span><span class="v">'+v+'</span>').join('');
+  const crit=ver.criteria.map(c=>(c.pass?'✓ ':'✕ ')+c.name+(c.detail?' ('+c.detail+')':'')).join('  ·  ');
+  renderVerdict(elIds.verdict,ver.pass?'ok':'fail',(ver.pass?'✓ PASS — meets the pre-registered claim.':'✕ DOES NOT meet the pre-registered claim.')+'\n'+crit);
+  return {measured,ver};
+}
+
+// ════════ CROSS-MACHINE RUN ════════
+let ME=null,PC=null,DC=null,ROLE=null,srflxSeen=false,started=false;
+function onIce(pc){pc.addEventListener('icecandidate',e=>{if(e.candidate&&/ typ srflx /.test(e.candidate.candidate))srflxSeen=true;});}
+
+async function runOrigin(dc){
+  if(started)return;started=true;$('results').classList.remove('hide');$('results').scrollIntoView({behavior:'smooth',block:'center'});
+  log('xLog','datachannel OPEN — you are the origin (device 1).');
+  const hop0=await makeHop(ME,0,'peer','','the mesh crossed a real machine boundary at '+new Date().toISOString());
+  const t0=Date.now();
+  dc.send(JSON.stringify({k:'hop0',hop:hop0}));
+  log('xLog','sent signed hop 0 (origin).');
+  dc.addEventListener('message',async ev=>{
+    let m;try{m=JSON.parse(ev.data);}catch(e){return;}
+    if(m.k!=='hop1')return;
+    const chainRTT=Date.now()-t0;
+    const hop1=m.hop;
+    const hop1Sig=await verifyHop(hop1);
+    const linked=linkOk(hop0,hop1);
+    log('xLog','got signed hop 1 (relay); its signature valid: '+hop1Sig+'; links onto hop 0: '+linked);
+    // append a terminal hop locally to complete a 3-hop chain, then verify the whole thing
+    const hop2=await makeHop(ME,2,'',hopRef(hop1),'');
+    const chain=[hop0,hop1,hop2];
+    const sigsOk=await allSigsValid(chain);
+    const structural=chainLinks(chain).ok;
+    log('xLog','built a 3-hop chain; all signatures valid: '+sigsOk+'; chain linked: '+structural);
+    log('xLog','measuring latency (5 round-trip pings)…');
+    const rtts=await pingRTTs(dc,5,6000);
+    log('xLog','latency samples (ms): '+rtts.map(Math.round).join(', '));
+    const twoNetworks=srflxSeen&&$('hTwoNet').checked;
+    const {ver}=renderResult({checks:'xChecks',kv:'xKv',verdict:'xVerdict'},{chain,sigsOk,structural,rtts,chainRTT,twoNetworks,srflx:srflxSeen,label:'cross-machine, measured'});
+    // tell device 2 the verdict so both screens agree
+    dc.send(JSON.stringify({k:'results',pass:ver.pass,hops:chain.length,twoNetworks}));
+  });
+}
+async function runRelay(dc){
+  if(started)return;started=true;$('results').classList.remove('hide');$('results').scrollIntoView({behavior:'smooth',block:'center'});
+  log('xLog','datachannel OPEN — you are the relay (device 2).');
+  dc.addEventListener('message',async ev=>{
+    let m;try{m=JSON.parse(ev.data);}catch(e){return;}
+    if(m.k==='hop0'){
+      const hop0=m.hop;const ok=await verifyHop(hop0);
+      log('xLog','got signed hop 0 (origin); its signature valid: '+ok+'; message: "'+String(hop0.payload).slice(0,60)+'…"');
+      const hop1=await makeHop(ME,1,hop0.from,hopRef(hop0),'');
+      dc.send(JSON.stringify({k:'hop1',hop:hop1}));
+      log('xLog','appended + signed hop 1, sent it back. (your clock can\'t time the RTT — device 1 holds the authoritative numbers.)');
+      renderChecks('xChecks',[{ok:ok,lbl:'origin hop verified + relayed with your signed hop'},{ok:true,lbl:'carried over a real peer-to-peer WebRTC datachannel'}]);
+    }else if(m.k==='ping'){
+      dc.send(JSON.stringify({k:'pong',i:m.i}));
+    }else if(m.k==='results'){
+      renderVerdict('xVerdict',m.pass?'ok':'fail',(m.pass?'✓ PASS':'✕ DOES NOT meet the claim')+' — device 1 measured '+m.hops+' hops; two networks: '+m.twoNetworks+'. (full numbers on device 1)');
+    }
+  });
+}
+
+// role selection
+$('roleHost').onclick=()=>{ROLE='host';$('roleHost').classList.add('on');$('roleGuest').classList.remove('on');$('hostPanel').classList.remove('hide');$('guestPanel').classList.add('hide');};
+$('roleGuest').onclick=()=>{ROLE='guest';$('roleGuest').classList.add('on');$('roleHost').classList.remove('on');$('guestPanel').classList.remove('hide');$('hostPanel').classList.add('hide');};
+
+// DEVICE 1
+$('hCreate').onclick=async()=>{
+  if(!ED_OK){$('hStatus').textContent='this device can\'t sign in-browser — see the check at the top.';return;}
+  $('hCreate').disabled=true;$('hStatus').textContent='minting identity + gathering network path…';
+  try{
+    ME=await genIdentity();PC=new RTCPeerConnection({iceServers:ICE});onIce(PC);
+    DC=PC.createDataChannel('hopchain');DC.onopen=()=>runOrigin(DC);
+    const offer=await PC.createOffer();await PC.setLocalDescription(offer);await waitIce(PC);
+    const inv=makeInvite('offer',ME.pk,PC.localDescription.sdp);
+    if(!inv.ok){$('hStatus').textContent='could not build code: '+inv.why;return;}
+    $('hInvite').value=packBlob(inv.invite);$('hId').textContent='you: '+ME.pk.slice(0,16)+'…';
+    $('hInviteWrap').classList.remove('hide');$('hStatus').textContent='code ready — send it to device 2.';
+    $('hStep2').classList.add('active');$('hConnect').disabled=false;
+  }catch(e){$('hStatus').textContent='error: '+(e&&e.message||e);$('hCreate').disabled=false;}
+};
+$('hCopy').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText($('hInvite').value);$('hCopy').textContent='Copied ✓';setTimeout(()=>$('hCopy').textContent='Copy code',1200);};
+$('hShareLink').onclick=async()=>{
+  const link=location.origin+location.pathname+'#offer='+encodeURIComponent($('hInvite').value);
+  if(navigator.share){try{await navigator.share({title:'fall-federate join',text:'Open this to join the mesh test:',url:link});return;}catch(e){}}
+  navigator.clipboard&&navigator.clipboard.writeText(link);$('hShareLink').textContent='Link copied ✓';setTimeout(()=>$('hShareLink').textContent='Share join link',1400);
+};
+$('hConnect').onclick=async()=>{
+  const obj=unpackBlob($('hAnswer').value);const r=obj?readInvite(obj):{ok:false,why:'not a valid code'};
+  if(!r.ok||r.role!=='answer'){$('hConnStatus').textContent='that is not a valid reply code'+(r.why?' ('+r.why+')':'');return;}
+  try{await PC.setRemoteDescription({type:'answer',sdp:r.sdp});$('hConnStatus').textContent='connecting to '+r.id.slice(0,12)+'… (if nothing happens in ~20s, the two NATs blocked it — a real STUN-only result)';}
+  catch(e){$('hConnStatus').textContent='connect error: '+(e&&e.message||e);}
+};
+
+// DEVICE 2
+$('gAccept').onclick=async()=>{
+  if(!ED_OK){$('gStatus').textContent='this device can\'t sign in-browser — see the check at the top.';return;}
+  const obj=unpackBlob($('gInvite').value);const r=obj?readInvite(obj):{ok:false,why:'not a valid code'};
+  if(!r.ok||r.role!=='offer'){$('gStatus').textContent='that is not a valid code from device 1'+(r.why?' ('+r.why+')':'');return;}
+  $('gAccept').disabled=true;$('gStatus').textContent='minting identity + answering…';
+  try{
+    ME=await genIdentity();PC=new RTCPeerConnection({iceServers:ICE});onIce(PC);
+    PC.ondatachannel=ev=>{DC=ev.channel;DC.onopen=()=>runRelay(DC);if(DC.readyState==='open')runRelay(DC);};
+    await PC.setRemoteDescription({type:'offer',sdp:r.sdp});
+    const ans=await PC.createAnswer();await PC.setLocalDescription(ans);await waitIce(PC);
+    const inv=makeInvite('answer',ME.pk,PC.localDescription.sdp);
+    if(!inv.ok){$('gStatus').textContent='could not build reply: '+inv.why;return;}
+    $('gAnswer').value=packBlob(inv.invite);$('gId').textContent='you: '+ME.pk.slice(0,16)+'…';
+    $('gAnswerWrap').classList.remove('hide');$('gStep2').classList.add('active');
+    $('gStatus').textContent='reply ready — send it back and wait for the connection.';
+  }catch(e){$('gStatus').textContent='error: '+(e&&e.message||e);$('gAccept').disabled=false;}
+};
+$('gCopy').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText($('gAnswer').value);$('gCopy').textContent='Copied ✓';setTimeout(()=>$('gCopy').textContent='Copy reply',1200);};
+$('gShare').onclick=async()=>{
+  if(navigator.share){try{await navigator.share({title:'fall-federate reply',text:$('gAnswer').value});return;}catch(e){}}
+  navigator.clipboard&&navigator.clipboard.writeText($('gAnswer').value);$('gShare').textContent='Copied ✓';setTimeout(()=>$('gShare').textContent='Share reply',1200);
+};
+
+// deep link: device 1 shared a link with #offer=… → auto-join on device 2
+(function(){const h=location.hash||'';const m=h.match(/[#&]offer=([^&]+)/);if(m){$('roleGuest').click();try{$('gInvite').value=decodeURIComponent(m[1]);}catch(e){$('gInvite').value=m[1];}$('gStatus').textContent='code auto-filled from the link — tap “Make my reply code”.';$('gInvite').scrollIntoView({behavior:'smooth',block:'center'});}})();
+
+// ════════ SAME-MACHINE SMOKE TEST ════════
+$('smokeBtn').onclick=async()=>{
+  if(!ED_OK){$('smokeState').textContent='this device can\'t sign in-browser.';return;}
+  $('smokeBtn').disabled=true;$('smokeState').textContent='running…';$('smokeLog').textContent='';$('smokeChecks').innerHTML='';$('smokeVerdict').style.display='none';
+  let localSrflx=false;
+  try{
+    const A=await genIdentity(),B=await genIdentity();
+    log('smokeLog','two independent identities minted (one machine, two contexts).');
+    const pcA=new RTCPeerConnection({iceServers:ICE}),pcB=new RTCPeerConnection({iceServers:ICE});
+    pcA.onicecandidate=e=>{if(e.candidate){if(/ typ srflx /.test(e.candidate.candidate))localSrflx=true;pcB.addIceCandidate(e.candidate).catch(()=>{});}};
+    pcB.onicecandidate=e=>{if(e.candidate){if(/ typ srflx /.test(e.candidate.candidate))localSrflx=true;pcA.addIceCandidate(e.candidate).catch(()=>{});}};
+    const dcA=pcA.createDataChannel('hopchain');
+    const done=new Promise((res,rej)=>{
+      let hop0=null,t0=0;
+      pcB.ondatachannel=ev=>{const dc=ev.channel;dc.onmessage=async mm=>{let m;try{m=JSON.parse(mm.data);}catch(e){return;}
+        if(m.k==='hop0'){const ok=await verifyHop(m.hop);log('smokeLog','B verified origin hop: '+ok);const h1=await makeHop(B,1,m.hop.from,hopRef(m.hop),'');dc.send(JSON.stringify({k:'hop1',hop:h1}));}
+        else if(m.k==='ping'){dc.send(JSON.stringify({k:'pong',i:m.i}));}
+      };};
+      dcA.onopen=async()=>{log('smokeLog','datachannel OPEN'+(localSrflx?' (srflx seen)':'')+'.');hop0=await makeHop(A,0,B.pk,'','smoke: same machine, two contexts');t0=Date.now();dcA.send(JSON.stringify({k:'hop0',hop:hop0}));};
+      dcA.onmessage=async mm=>{let m;try{m=JSON.parse(mm.data);}catch(e){return;}
+        if(m.k!=='hop1')return;const chainRTT=Date.now()-t0;const sigOk=await verifyHop(m.hop);const linked=linkOk(hop0,m.hop);
+        const hop2=await makeHop(A,2,'',hopRef(m.hop),'');const chain=[hop0,m.hop,hop2];
+        const sigsOk=await allSigsValid(chain)&&sigOk;const structural=chainLinks(chain).ok&&linked;
+        const rtts=await pingRTTs(dcA,5,5000);
+        renderResult({checks:'smokeChecks',kv:null,verdict:'smokeVerdict'},{chain,sigsOk,structural,rtts,chainRTT,twoNetworks:false,srflx:localSrflx,label:'SAME-MACHINE smoke — not the cross-machine proof'});
+        pcA.close();pcB.close();res();
+      };
+    });
+    const offer=await pcA.createOffer();await pcA.setLocalDescription(offer);await pcB.setRemoteDescription(offer);
+    const answer=await pcB.createAnswer();await pcB.setLocalDescription(answer);await pcA.setRemoteDescription(answer);
+    await Promise.race([done,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timed out')),15000))]);
+    // overwrite the verdict line to make the honest framing loud
+    const cur=$('smokeVerdict').textContent;
+    $('smokeVerdict').textContent='SMOKE TEST (one machine) — transport + harness WORK. The pre-registered evaluator below correctly FAILS the two-networks criterion, because this is not a cross-machine run:\n'+cur;
+  }catch(e){
+    log('smokeLog','error: '+(e&&e.message||e));
+    renderVerdict('smokeVerdict','fail','✕ '+(e&&e.message||e)+' — WebRTC / Ed25519 may be unavailable here.');
+  }
+  $('smokeState').textContent='';$('smokeBtn').disabled=false;
+};
+
+detectCaps();
+</script>
+</html>

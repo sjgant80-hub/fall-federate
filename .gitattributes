@@ -1,0 +1,9 @@
+# Deterministic line endings so the kernel sha256 pinned in prereg.json reproduces
+# on every clone (the CRLF trap). Source + data are always LF.
+* text=auto eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
