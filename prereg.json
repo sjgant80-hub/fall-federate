@@ -1,0 +1,44 @@
+{
+  "title": "fall-federate · cross-machine signed-hop-chain — PRE-REGISTERED CLAIM",
+  "registeredAt": "2026-10-05",
+  "status": "PENDING — awaiting a second physical device",
+  "why_preregistered": "Every prior 'mesh proven' in the estate was one laptop talking to itself (two browser contexts, one machine, one network). This pre-registers the claim that has NOT yet been run, with its pass/fail thresholds fixed in advance, so that when a second device appears the run is MEASURE-ONLY: the numbers are compared to these thresholds by evalPrereg() in the gated kernel, and the verdict cannot be moved after the fact.",
+
+  "sealedKernel": {
+    "file": "hopchain-kernel.mjs",
+    "sha256": "6a2e463af83583876956b477b7195a87857932c0735faffff316442b32828835",
+    "gate": "witness v0.2 — 45/45 mutants killed, score 1.0, clean (run `node .witness/witness.mjs mutate hopchain-kernel.mjs --test node hopchain.test.mjs`, or see CI)"
+  },
+
+  "the_claim": "Two GENUINELY independent physical machines, on two DIFFERENT physical networks (one on a mobile hotspot, so a real NAT sits between them), establish a direct WebRTC datachannel using only manual signalling and a public STUN server (NO TURN, NO signalling server, NO backend), and relay a message as a chain of N≥2 per-hop-signed, hash-chained hops. Every hop's Ed25519 signature verifies against its node's public key; the chain is cryptographically linked (no hop can be reordered, dropped, duplicated, or forged into the middle); the hops are delivered end to end; and the per-hop latency is measured.",
+
+  "thresholds": {
+    "minHops": 2,
+    "maxMedianLatencyMs": 2000,
+    "requireDelivery": true,
+    "requireTwoNetworks": true
+  },
+  "thresholds_note": {
+    "minHops": "A message that originates on machine 1 (seq 0) and is relayed by machine 2 (seq 1) is a 2-hop chain, and already crosses the boundary once with a signed hop. The harness attempts a round trip (machine 1 → machine 2 → machine 1 = 3 hops) so the boundary is crossed in both directions; 2 is the honest floor.",
+    "maxMedianLatencyMs": "Once a datachannel is open, cross-network message latency is typically tens to low hundreds of ms; 2000ms is generous headroom, not a tight target. Reported, not just pass/fail.",
+    "requireTwoNetworks": "Measured from the ICE candidate pair (a server-reflexive / srflx candidate must be used, i.e. the public path, not a host-only LAN path) AND corroborated by the operator confirming device 2 is on a separate network (e.g. a phone hotspot). Browser mDNS IP obfuscation can hide the raw addresses; where it does, the srflx-candidate signal plus the operator's confirmation stands in, and the run says so plainly."
+  },
+
+  "honest_expectation": "This may PARTLY FAIL, and that is a legitimate outcome, reported, not hidden. The estate's fallfloor pre-registration already failed on latency and chain-shape; a pre-registration that cannot fail is not one. The most likely honest failure here is CONNECTION itself: STUN-only (no TURN relay, by sovereign choice) cannot always punch through two symmetric NATs. If the two devices will not connect, delivery FAILS — and the correct response is to name it, not to add a relay server. Keeping manual signalling + STUN-only is the correct sovereign design ([[sovereign-p2p-webrtc]]); the human-join is a feature, not a bug.",
+
+  "proven_vs_pending": {
+    "PROVEN_now": [
+      "The signed hop-chain KERNEL (hopchain-kernel.mjs): per-hop binding, tamper-evidence, delivery + latency maths, and the measure-only prereg evaluator — witness-gated 45/45 clean.",
+      "The WIRE, cold, in Node (hopchain.test.mjs): a real 3-node Ed25519 signed chain verifies end to end; tampering a middle hop breaks BOTH its signature and the chain link; a hop signed by the wrong key is rejected.",
+      "The SAME-MACHINE transport smoke test on the /crossing page: two independent browser contexts build and verify a signed hop chain over a real WebRTC datachannel. This proves the transport + harness work — it is explicitly NOT the cross-machine proof."
+    ],
+    "PENDING_second_device": [
+      "The claim above, run across two physical machines on two networks, with measured latency + delivery, evaluated by evalPrereg() against these fixed thresholds."
+    ]
+  },
+
+  "how_it_will_be_run": "On device 2, open https://sjgant80-hub.github.io/fall-federate/crossing/ , tap Join, and scan or paste the one code from device 1, then send one code back. The datachannel opens; the signed hop chain relays; the results panel fills in with the measured numbers and the PASS/FAIL verdict per criterion. ~2 minutes once a second device is present.",
+
+  "result": null,
+  "result_note": "This stays null until the real cross-machine run is recorded here. A same-machine smoke result is NEVER written to this field."
+}
