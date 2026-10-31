@@ -36,7 +36,7 @@ The cross-machine run is **pre-registered** in [`prereg.json`](prereg.json) with
 [![Peers connecting directly with no server between](https://www.ai-nativesolutions.com/media/images/mesh-no-server.jpg)](https://www.ai-nativesolutions.com/explainer.html#film)
 
 Minimum-viable **federation (N=2)**: two *genuinely independent* sovereign identities exchange a signed
-query/answer over a **real WebRTC datachannel** and settle a **bounded provenance payout** — every signature
+query/answer over a **real WebRTC datachannel** and settle a **bounded provenance credit** — every signature
 checkable by a third party against nothing but the public keys. Plus the estate's mutation gate run against a
 **real external repo we don't own**.
 
@@ -47,7 +47,7 @@ This is the mechanism the whole sovereign-mesh thesis rests on, proven end to en
 - **Signed exchange, cold** — `federation.mjs` runs the full loop with real Ed25519: a seeker signs a query;
   an independent contributor (born of the estate with a verifiable birth-certificate) verifies it, answers
   from its own expertise, and signs an answer **bound to that exact query**; the seeker verifies everything;
-  the value settles to the contributor with a bounded upstream provenance royalty. A third party re-verifies
+  the value settles to the contributor with a bounded upstream provenance credit. A third party re-verifies
   it all from the bundle alone (`evidence.json`). Tamper one byte and it fails (tested).
 - **Real transport** — the `/test` page connects two identities over an actual WebRTC datachannel (STUN for
   the reflexive address — the sovereign way, no relay) and runs a fresh signed exchange live.
@@ -60,7 +60,7 @@ This is the mechanism the whole sovereign-mesh thesis rests on, proven end to en
 
 ## Proof
 
-- `federation-kernel.mjs` — the pure federation invariants (anti-substitution binding + the bounded payout).
+- `federation-kernel.mjs` — the pure federation invariants (anti-substitution binding + the bounded credit).
   **Witness v0.2: 17/17 mutants killed, score 1.0.** Composes the estate's proven wallet lineage.
 - `hopchain-kernel.mjs` — the pure signed-hop-chain invariants (per-hop binding + tamper-evidence + the
   delivery/latency maths + the measure-only `evalPrereg`). **Witness v0.2: 45/45 mutants killed, score 1.0.**
@@ -73,5 +73,5 @@ This is the mechanism the whole sovereign-mesh thesis rests on, proven end to en
 ## Credits
 
 Trust rail: the estate's **witness** mutation gate — the un-forgeable proof of the code. Composes
-**the-wallet** (the sovereign agent-wallet + lineage royalty). Built on the Konomi architecture, created by
+**the-wallet** (the agent identity + lineage credit). Built on the Konomi architecture, created by
 **Thomas Frumkin**. Mesh, relay and reflection layers build on **Gary W. Floyd**'s work. — Kar (karma-didy)

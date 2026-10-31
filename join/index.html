@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <title>fall-federate — join</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Federate with another person over real WebRTC — no server. Trade an invite blob and an answer blob by hand, connect peer to peer, and run one signed query/answer exchange with a bounded provenance payout, verified on both sides.">
+<meta name="description" content="Federate with another person over real WebRTC — no server. Trade an invite blob and an answer blob by hand, connect peer to peer, and run one signed query/answer exchange with a bounded provenance credit, verified on both sides.">
 <meta name="theme-color" content="#0b0e14">
 <style>
   :root{--bg:#f7f8fa;--panel:#fff;--panel2:#f1f4f8;--ink:#0d1520;--muted:#576373;--faint:#8a94a3;--line:#e3e8ef;--accent:#3b5bdb;--accent2:#7048e8;--accent-ink:#fff;--ok:#0c9463;--warn:#d9880a;--hot:#c0392b;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;--mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;--maxw:900px;--r:14px}
@@ -54,7 +54,7 @@
 <header>
   <span class="eyebrow">fall-federate · join</span>
   <h1>Federate with another person.</h1>
-  <p class="lead">Two people, two machines, no server. One of you starts a connection and gets an <b>invite blob</b>; send it to the other over a channel you trust (Signal, in person). They paste it, send an <b>answer blob</b> back, and you connect <b>peer to peer over real WebRTC</b>. Then your two Didys run one signed query/answer exchange and settle a bounded provenance payout — each side verifying the other. This is the real thing; the <a href="../test/">/test proof</a> shows it works cold and live.</p>
+  <p class="lead">Two people, two machines, no server. One of you starts a connection and gets an <b>invite blob</b>; send it to the other over a channel you trust (Signal, in person). They paste it, send an <b>answer blob</b> back, and you connect <b>peer to peer over real WebRTC</b>. Then your two Didys run one signed query/answer exchange and settle a bounded provenance credit — each side verifying the other. This is the real thing; the <a href="../test/">/test proof</a> shows it works cold and live.</p>
 </header>
 
 <div class="roles">
@@ -112,7 +112,7 @@
 
 <footer class="wrap">
   <p>See federation in context — the whole estate in the <a href="https://www.ai-nativesolutions.com/explainer.html#film" target="_blank" rel="noopener">90-second film</a>.</p>
-  Kernel-backed: this page imports the estate's gated <code>federation-kernel.mjs</code> + <code>signaling.mjs</code> directly — the logic you run is the logic the mutation gate proves. Composes <b>the-wallet</b> (lineage royalty). Built on the Konomi architecture, created by Thomas Frumkin; mesh &amp; reflection build on Gary W. Floyd's work. — Kar (karma-didy) · <a href="https://github.com/sjgant80-hub/fall-federate" target="_blank" rel="noopener">source</a>
+  Kernel-backed: this page imports the estate's gated <code>federation-kernel.mjs</code> + <code>signaling.mjs</code> directly — the logic you run is the logic the mutation gate proves. Composes <b>the-wallet</b> (lineage credit). Built on the Konomi architecture, created by Thomas Frumkin; mesh &amp; reflection build on Gary W. Floyd's work. — Kar (karma-didy) · <a href="https://github.com/sjgant80-hub/fall-federate" target="_blank" rel="noopener">source</a>
 </footer>
 </div>
 
@@ -164,11 +164,11 @@ async function runSeeker(dc){
     renderChecks([
       {ok:sigOk,lbl:"the other person's answer is signed by their key"},
       {ok:bound,lbl:"the answer is bound to your exact query"},
-      {ok:pay.ok&&pay.withinBound,lbl:"the provenance payout settled within bound"},
+      {ok:pay.ok&&pay.withinBound,lbl:"the provenance credit settled within bound"},
       {ok:true,lbl:"carried over a real peer-to-peer WebRTC datachannel"}
     ]);
     const all=sigOk&&bound&&pay.ok&&pay.withinBound;
-    verdict(all,all?'✓ FEDERATED — two independent people, one signed exchange, one settled payout.':'✕ verification failed');
+    verdict(all,all?'✓ FEDERATED — two independent people, one signed exchange, one settled credit.':'✕ verification failed');
   };
 }
 // run the contributor (guest) side

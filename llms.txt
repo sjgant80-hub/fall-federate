@@ -1,7 +1,7 @@
 # fall-federate
 
 > Minimum-viable sovereign federation and a cross-machine signed-hop-chain mesh test. Two genuinely
-> independent Ed25519 identities exchange a signed query/answer and settle a bounded provenance payout
+> independent Ed25519 identities exchange a signed query/answer and settle a bounded provenance credit
 > over real WebRTC (STUN only, no TURN, no signalling server) — and relay a message across two physical
 > machines as a chain of per-hop-signed, hash-chained hops, with measured latency and delivery evaluated
 > against a claim registered in advance. Every claim is re-runnable in the browser and re-verifiable by a
@@ -19,4 +19,4 @@
 ## Source and provenance
 - [hopchain-kernel.mjs](https://github.com/sjgant80-hub/fall-federate/blob/main/hopchain-kernel.mjs): the pure, witness-gated signed-hop-chain invariants.
 - [prereg.json](https://github.com/sjgant80-hub/fall-federate/blob/main/prereg.json): the pre-registered cross-machine claim and thresholds.
-- Trust rail: the estate's `witness` mutation gate. Composes the-wallet (sovereign agent-wallet + lineage). Built on the Konomi architecture, created by Thomas Frumkin. Mesh and relay build on Gary W. Floyd's work. Author: Kar (karma-didy).
+- Trust rail: the estate's `witness` mutation gate. Composes the-wallet (agent identity + lineage). Built on the Konomi architecture, created by Thomas Frumkin. Mesh and relay build on Gary W. Floyd's work. Author: Kar (karma-didy).

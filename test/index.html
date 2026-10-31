@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <title>fall-federate — proof of play</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Live, re-runnable proof: two independent sovereign identities federate over real WebRTC, exchange a signed query/answer, and settle a bounded provenance payout — all verifiable in your own browser. Plus the estate's witness gate run against a real external repo.">
+<meta name="description" content="Live, re-runnable proof: two independent sovereign identities federate over real WebRTC, exchange a signed query/answer, and settle a bounded provenance credit — all verifiable in your own browser. Plus the estate's witness gate run against a real external repo.">
 <meta name="theme-color" content="#0b0e14">
 <style>
   :root{--bg:#f7f8fa;--panel:#fff;--panel2:#f1f4f8;--ink:#0d1520;--muted:#576373;--faint:#8a94a3;--line:#e3e8ef;--accent:#3b5bdb;--accent2:#7048e8;--accent-ink:#fff;--ok:#0c9463;--warn:#d9880a;--hot:#c0392b;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;--mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;--maxw:1000px;--r:14px}
@@ -48,8 +48,8 @@
 <button class="theme" id="theme" type="button">Theme</button>
 <header>
   <span class="eyebrow">fall-federate · proof of play</span>
-  <h1>Two nodes, one signed exchange, one payout — checked in your browser.</h1>
-  <p class="lead">Not a claim, a re-run. Below, two <b>genuinely independent</b> sovereign identities federate: one asks, the other answers from its own expertise, and the value is settled with a bounded provenance royalty upstream. Every signature is verified here, on your machine, against nothing but the public keys. Then a live version runs over a <b>real WebRTC datachannel</b>. And separately, the estate's mutation gate is run against a real external repo we don't own.</p>
+  <h1>Two nodes, one signed exchange, one credit — checked in your browser.</h1>
+  <p class="lead">Not a claim, a re-run. Below, two <b>genuinely independent</b> sovereign identities federate: one asks, the other answers from its own expertise, and the value is settled with a bounded provenance credit upstream. Every signature is verified here, on your machine, against nothing but the public keys. Then a live version runs over a <b>real WebRTC datachannel</b>. And separately, the estate's mutation gate is run against a real external repo we don't own.</p>
 </header>
 
 <section id="reverify">
@@ -68,7 +68,7 @@
 <section id="live">
   <span class="tag">Live · real transport</span>
   <h2>2 · Run a fresh federation over a real WebRTC datachannel</h2>
-  <p class="note">This spins up <b>two independent identities</b> and connects them peer-to-peer over a real WebRTC datachannel (STUN for the public reflexive address — the sovereign way, no relay). One signs a query, sends it over the wire; the other verifies it, answers, signs; the first verifies and settles the payout. All in your browser, live. Same machine here, real transport — a second physical machine/human is the follow-on step (below).</p>
+  <p class="note">This spins up <b>two independent identities</b> and connects them peer-to-peer over a real WebRTC datachannel (STUN for the public reflexive address — the sovereign way, no relay). One signs a query, sends it over the wire; the other verifies it, answers, signs; the first verifies and settles the credit. All in your browser, live. Same machine here, real transport — a second physical machine/human is the follow-on step (below).</p>
   <div class="card">
     <div class="row"><button class="btn" id="liveBtn" type="button">Run live over WebRTC →</button> <span id="liveState" class="mono" style="color:var(--muted)"></span></div>
     <ul class="checks" id="liveChecks"></ul>
@@ -92,7 +92,7 @@
   <h2>What this proves — and what still needs a second human</h2>
   <div class="card">
     <ul class="checks">
-      <li class="pass"><span class="st">✓</span><span><b>Proven cold:</b> <span class="dsc">two genuinely-independent Ed25519 identities exchange a signed query/answer bound together, settle a bounded provenance payout, and a third party re-verifies it all from the bundle alone. Tamper one byte and it fails (tested).</span></span></li>
+      <li class="pass"><span class="st">✓</span><span><b>Proven cold:</b> <span class="dsc">two genuinely-independent Ed25519 identities exchange a signed query/answer bound together, settle a bounded provenance credit, and a third party re-verifies it all from the bundle alone. Tamper one byte and it fails (tested).</span></span></li>
       <li class="pass"><span class="st">✓</span><span><b>Proven live:</b> <span class="dsc">the same exchange over a real WebRTC datachannel with a STUN reflexive address — real transport, not a loopback of one key.</span></span></li>
       <li class="pass"><span class="st">✓</span><span><b>Proven external:</b> <span class="dsc">the mutation gate produced a real verdict on a real repo we don't own.</span></span></li>
       <li class="pend"><span class="st">◻</span><span><b>Still needs a second human:</b> <span class="dsc">the live run here is two identities in one browser. The true test is a second person on a different machine. <b><a href="../join/">Do it now → /join/</a></b>: one of you starts a connection and sends an invite blob over Signal, the other pastes it and sends an answer back, and you federate peer-to-peer for real. The mechanism is proven; the remaining step is a willing second operator.</span></span></li>
@@ -145,7 +145,7 @@ $('reBtn').onclick=async()=>{
   checks.push({ok:lineage,lbl:"contributor's lineage birth-certificate",dsc:"the estate signed this node's birth — verifiable, not asserted"});
   const re=settlement(b.contributor.depth,b.settlement.contributorKeeps,b.decay);
   const payOk=re.ok&&Math.abs(re.upstreamTotal-b.settlement.upstreamTotal)<1e-9&&re.withinBound;
-  checks.push({ok:payOk,lbl:"payout recomputes & stays within the runaway-proof bound",dsc:"contributor keeps "+b.settlement.contributorKeeps+"; upstream "+b.settlement.upstreamTotal+" (bound "+re.bound+")"});
+  checks.push({ok:payOk,lbl:"credit recomputes & stays within the runaway-proof bound",dsc:"contributor keeps "+b.settlement.contributorKeeps+"; upstream "+b.settlement.upstreamTotal+" (bound "+re.bound+")"});
   renderChecks('reChecks',checks);
   const all=checks.every(c=>c.ok);
   const v=$('reVerdict');v.style.display='block';v.className='verdict '+(all?'ok':'fail');v.textContent=all?'✓ ALL SIGNATURES VERIFIED — this exchange is genuine, checked on your machine.':'✕ verification failed';
@@ -204,7 +204,7 @@ $('liveBtn').onclick=async()=>{
         checks.push({ok:contributorVerifiedQuery,lbl:'B verified A\'s signed query over the wire'});
         checks.push({ok:seekerVerifiedAnswer,lbl:'A verified B\'s signed answer over the wire'});
         checks.push({ok:bound,lbl:'the answer is bound to A\'s exact query'});
-        checks.push({ok:payoutOk,lbl:'the provenance payout settled within bound'});
+        checks.push({ok:payoutOk,lbl:'the provenance credit settled within bound'});
         checks.push({ok:true,lbl:'carried over a real WebRTC datachannel'+(srflx?' + STUN reflexive address':'')});
         res();
       };
@@ -214,7 +214,7 @@ $('liveBtn').onclick=async()=>{
     await Promise.race([done,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timed out')),15000))]);
     renderChecks('liveChecks',checks);
     const all=checks.every(c=>c.ok);
-    const v=$('liveVerdict');v.style.display='block';v.className='verdict '+(all?'ok':'fail');v.textContent=all?'✓ LIVE FEDERATION SUCCEEDED — two identities, real WebRTC, signed exchange, settled payout.':'✕ live run incomplete';
+    const v=$('liveVerdict');v.style.display='block';v.className='verdict '+(all?'ok':'fail');v.textContent=all?'✓ LIVE FEDERATION SUCCEEDED — two identities, real WebRTC, signed exchange, settled credit.':'✕ live run incomplete';
     pcA.close();pcB.close();
   }catch(e){
     log('error: '+(e&&e.message||e));
