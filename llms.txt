@@ -19,4 +19,4 @@
 ## Source and provenance
 - [hopchain-kernel.mjs](https://github.com/sjgant80-hub/fall-federate/blob/main/hopchain-kernel.mjs): the pure, witness-gated signed-hop-chain invariants.
 - [prereg.json](https://github.com/sjgant80-hub/fall-federate/blob/main/prereg.json): the pre-registered cross-machine claim and thresholds.
-- Trust rail: the estate's `witness` mutation gate. Composes the-wallet (agent identity + lineage). Built on the Konomi architecture, created by Thomas Frumkin. Mesh and relay build on Gary W. Floyd's work. Author: Kar (karma-didy).
+- Trust rail: the estate's `witness` mutation gate. Composes the-wallet (agent identity + lineage). Built on the Konomi architecture, created by Thomas Frumkin. Mesh and relay build on Gary W. Floyd's work. Author: Kar.

@@ -74,4 +74,4 @@ This is the mechanism the whole sovereign-mesh thesis rests on, proven end to en
 
 Trust rail: the estate's **witness** mutation gate — the un-forgeable proof of the code. Composes
 **the-wallet** (the agent identity + lineage credit). Built on the Konomi architecture, created by
-**Thomas Frumkin**. Mesh, relay and reflection layers build on **Gary W. Floyd**'s work. — Kar (karma-didy)
+**Thomas Frumkin**. Mesh, relay and reflection layers build on **Gary W. Floyd**'s work. — Kar
